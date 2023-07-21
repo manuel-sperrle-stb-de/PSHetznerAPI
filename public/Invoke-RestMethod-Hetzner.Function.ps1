@@ -1,5 +1,5 @@
 Function Invoke-RestMethod-Hetzner {
-# https://dns.hetzner.com/api-docs/
+    # https://dns.hetzner.com/api-docs/
 
     [CmdletBinding()]
     param (     
@@ -29,7 +29,10 @@ Function Invoke-RestMethod-Hetzner {
 
         # -eq Invoke-RestMethod
         [object]
-        $Body
+        $Body,
+
+        [switch]
+        $Paged
 
     )
 
@@ -48,36 +51,37 @@ Function Invoke-RestMethod-Hetzner {
 
     process {
 
-        $Query | ForEach-Object {
+        if (-not $Paged) {
+            $Query | ForEach-Object {
+                $RestMethodParams.Uri = '{0}/{1}' -f $BaseUri.TrimEnd('/'), $_.TrimStart('/')
+                Invoke-RestMethod @RestMethodParams
+            }
+        }
+        else {
 
-            $RestMethodParams.Uri = '{0}/{1}' -f $BaseUri.TrimEnd('/'), $Query.TrimStart('/')
-            
             $Page = 1
             do {
-                
-                $ThisRestMethodParams = $RestMethodParams.Clone()
-                $ThisRestMethodParams.Uri = $ThisRestMethodParams.Uri + "?page=$Page"
 
-                try {
-                    # API will Error if pages is too high
-                    $Answer = Invoke-RestMethod @ThisRestMethodParams -ErrorAction Stop
+                $RestMethodParams.Uri = '{0}/{1}?page={2}' -f $BaseUri.TrimEnd('/'), $_.TrimStart('/'), $Page
+                
+                try { 
+                    $Answer = Invoke-RestMethod @RestMethodParams -ErrorAction Stop
                 }
                 catch {
-                    # tbd: catch/handle errors
+                    $Answer = $null
                     $Finished = $true
-                    $Answer = $false
                 }
                 finally {
-                    if (-not $Answer) { $Finished = $true }
-                    $Answer
+                    if ($Answer) {
+                        $Answer
+                        $Page++
+                    }
+                    else {
+                        $Finished = $true
+                    }
                 }
-                
-                $Page++
-
-            } until ($Finished)
-
-        }
-
+            }
+            until ($Finished)
+        }       
     }
-
 }

@@ -5,5 +5,5 @@ Get-ChildItem $PSScriptRoot/.. -Recurse -Filter *.Function.ps1 | ForEach-Object 
     . $_.FullName
 }
 
-$Zones = ("zones" | Invoke-RestMethod-Hetzner).zones
+$Zones = ("zones" | Invoke-RestMethod-Hetzner -Paged).zones
 $Zones.Count
