@@ -104,7 +104,7 @@ $Data = Get-Data
 'Generating Missing ...' | Write-Host
 $Missing = $Data.Hetzner | Where-Object { $Data.Mg.ZoneId -notcontains $_.id }
 
-'Processing Missing -> MgGraph' | Write-Host
+'Processing Missing -> MgGraph ...' | Write-Host
 $Missing | ForEach-Object {
     
     $HetznerObject = $_
@@ -143,6 +143,7 @@ $Missing | ForEach-Object {
 
 }
 
+'Update Hetzner -> MgGraph ...' | Write-Host
 $Data.Mg | Where-Object ZoneId -ne $null | ForEach-Object {
  
     $MgSiteListItemParams = @{
